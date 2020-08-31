@@ -1,15 +1,15 @@
 use serde_json::{Value, json};
 use serde::{Deserialize, Serialize};
 
-fn json_to_rust(input: &str) -> Value{
-    match serde_json::from_str(input){
+pub fn json_to_rust(input: String) -> Value{
+    match serde_json::from_str(&input){
         Ok(v) => v,
         Err(e) => panic!("Wrong format or {}", e) 
     }
 }
 
-fn rust_to_json<T: serde::ser::Serialize>(input: &T) -> String{
-    match serde_json::to_string(input){
+pub fn rust_to_json<T: serde::ser::Serialize>(input: T) -> String{
+    match serde_json::to_string(&input){
         Ok(v) => v,
         Err(e) => panic!("Wrong format or {}", e)
     }
@@ -36,7 +36,7 @@ fn json_to_rust_test()
             ]
     }");
 
-    let values = json_to_rust(&json);
+    let values = json_to_rust(json);
 
     assert!(values["name"] == "John Doe");
     assert!(values["age"] == 43);
