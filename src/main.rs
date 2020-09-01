@@ -27,13 +27,24 @@ fn main(){
 
     if let Some(submatches) = matches.subcommand_matches("morph")
     {
-        println!("{}", submatches.value_of("from_type").expect("No value"));
-        println!("{}", submatches.value_of("from_file").expect("No value"));
-
+        if submatches.is_present("from_type")
+        {
+            println!("{}", submatches.value_of("from_type").expect("No value"));
+        }
+        if submatches.is_present("from_file")
+        {
+            println!("{}", submatches.value_of("from_file").expect("No value"));
+        }
         if let Some(submatches) = submatches.subcommand_matches("to")
         {
-            println!("{}", submatches.value_of("to_type").expect("No value"));
-            println!("{}", submatches.value_of("to_file").expect("No value"));
+            if submatches.is_present("to_type")
+            {
+                println!("{}", submatches.value_of("to_type").expect("No value"));
+            }
+            if submatches.is_present("to_file")
+            {
+                println!("{}", submatches.value_of("to_file").expect("No value"));
+            }
         }
     }
     
