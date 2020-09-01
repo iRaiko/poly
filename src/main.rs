@@ -9,21 +9,31 @@ mod cbt_ini;
 mod cbt_yaml;
 
 fn main(){
-    let _arg_vec = vec!["poly", "morph", "json", "test.txt", "to", "yaml", "bla.txt"];
+    let arg_vec = vec!["poly", "morph", "json", "test.txt", "to", "yaml", "bla.txt"];
+
+    let possible_formats = vec!["json", "toml", "yaml", "ini"];
 
     let matches = App::new("poly")
         .author(crate_authors!())
         .version(crate_version!())
         .subcommand(SubCommand::with_name("morph")
             .arg(Arg::with_name("from_type")
-                .possible_values(&["json", "toml", "yaml", "ini"]))
-            .arg(Arg::with_name("from_file"))
-                .subcommand(SubCommand::with_name("to")
+                .help("")
+                .required(true)
+                .possible_values(&possible_formats))
+            .arg(Arg::with_name("from_file")
+                .help("")
+                .required(true))
+            .subcommand(SubCommand::with_name("to")
                     .arg(Arg::with_name("to_type")
-                        .possible_values(&["json", "toml", "yaml", "ini"]))
-                    .arg(Arg::with_name("to_file"))))
-        .get_matches();
-        //.get_matches_from(arg_vec);
+                        .help("")
+                        .required(true)
+                        .possible_values(&possible_formats))
+                    .arg(Arg::with_name("to_file")
+                        .help("")
+                        .required(true))))
+        //.get_matches();
+        .get_matches_from(arg_vec);
 
     if let Some(submatches) = matches.subcommand_matches("morph")
     {
@@ -33,7 +43,9 @@ fn main(){
         }
         if submatches.is_present("from_file")
         {
-            println!("{}", submatches.value_of("from_file").expect("No value"));
+            let path = submatches.value_of("from_file").expect("No value");
+            println!("{}", path);
+            load_file(path);
         }
         if let Some(submatches) = submatches.subcommand_matches("to")
         {
@@ -43,7 +55,9 @@ fn main(){
             }
             if submatches.is_present("to_file")
             {
-                println!("{}", submatches.value_of("to_file").expect("No value"));
+                let path = submatches.value_of("to_file").expect("No value");
+                println!("{}", path);
+                save_file(path);
             }
         }
     }
@@ -51,8 +65,15 @@ fn main(){
 }
 
 
+fn load_file(path: &str){
+    println!("Loading file : {}", path);
+}
 
-fn _file_validator(v: String) -> Result<(), String>{
+fn save_file(path: &str){
+    println!("Savign file : {}", path);
+}
+
+fn file_validator(v: String) -> Result<(), String>{
     let metadata = fs::metadata(v);
     match metadata {
         Ok(file) =>  if file.is_file(){ return Ok(())} else { Err(String::from("The value is not a valid file")) } 
