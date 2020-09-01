@@ -9,9 +9,7 @@ mod cbt_ini;
 mod cbt_yaml;
 
 fn main(){
-    let example_loc = r"C:\Users\Raiko\Desktop\Temporary_test_files\example.txt";
-    let new_loc = r"C:\Users\Raiko\Desktop\Temporary_test_files\result.txt";
-    let arg_vec = vec!["poly", "morph", "json", "test.txt", "to", "yaml", "bla.txt"];
+    let _arg_vec = vec!["poly", "morph", "json", "test.txt", "to", "yaml", "bla.txt"];
 
     let matches = App::new("poly")
         .author(crate_authors!())
