@@ -7,6 +7,7 @@ use std::fs;
 mod cbt_json;
 mod cbt_ini;
 mod cbt_yaml;
+mod cbt_toml;
 
 fn main(){
     let arg_vec = vec!["poly", "morph", "json", "test.txt", "to", "yaml", "bla.txt"];
@@ -35,42 +36,68 @@ fn main(){
         //.get_matches();
         .get_matches_from(arg_vec);
 
+
+
+    //steps
+    //
+    //1. clap
+    //2. get values from clap
+    //3. load file
+    //4. convert format
+    //5. save file
+    //6. end
+
     if let Some(submatches) = matches.subcommand_matches("morph")
     {
-        if submatches.is_present("from_type")
-        {
-            println!("{}", submatches.value_of("from_type").expect("No value"));
-        }
-        if submatches.is_present("from_file")
-        {
-            let path = submatches.value_of("from_file").expect("No value");
-            println!("{}", path);
-            load_file(path);
-        }
+
+        let format = submatches.value_of("from_type").expect("No value");
+        println!("The format we are converting from is {}", format);
+        let path = submatches.value_of("from_file").expect("No value");
+        println!("The file name is {}", path);
+        let content = load_file(path);
+
+        let deserialized_content = match format{
+            "json" => cbt_json::deserialize_json(content),
+            "yaml" => cbt_yaml::deserialize_yaml(content),
+            "toml" => cbt_toml::deserialize_toml(content),
+            "ini" => cbt_ini::deserialize_ini(content),
+            _ => panic!("You are not supposed to come here my friend"),
+        };
+
+        println!("{}", deserialized_content);
+
         if let Some(submatches) = submatches.subcommand_matches("to")
         {
-            if submatches.is_present("to_type")
-            {
-                println!("{}", submatches.value_of("to_type").expect("No value"));
-            }
-            if submatches.is_present("to_file")
-            {
-                let path = submatches.value_of("to_file").expect("No value");
-                println!("{}", path);
-                save_file(path);
-            }
+            println!("The format we are converting to is {}", submatches.value_of("to_type").expect("No value"));
+            let path = submatches.value_of("to_file").expect("No value");
+            println!("The file we are saving to is {}", path);
+
+            let serialized_content = match format{
+                "json" => cbt_json::serialize_json(deserialized_content),
+                "yaml" => cbt_yaml::serialize_yaml(deserialized_content),
+                "toml" => cbt_toml::serialize_toml(deserialized_content),
+                "ini" => cbt_ini::serialize_ini(deserialized_content),
+                _ => panic!("You are not supposed to come here my friend"),
+            };
+
+            println!("{}", serialized_content);
+
+            let result = save_file(path, serialized_content);
+            println!("{}", result);
         }
     }
-    
+
 }
 
 
-fn load_file(path: &str){
+fn load_file(path: &str) -> String{
     println!("Loading file : {}", path);
+    String::from("Loaded file")
 }
 
-fn save_file(path: &str){
-    println!("Savign file : {}", path);
+fn save_file(path: &str, content: String) -> String{
+    println!("Saving Content: {} to file : {}", content,  path);
+    String::from("Saved file")
 }
 
 fn file_validator(v: String) -> Result<(), String>{
