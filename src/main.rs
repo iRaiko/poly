@@ -2,6 +2,8 @@
 extern crate clap;
 use clap::{Arg, App, SubCommand, AppSettings};
 use std::fs;
+use std::fs::OpenOptions;
+use std::io::stdin;
 
 mod cbt_json;
 mod cbt_ini;
@@ -70,17 +72,6 @@ Arguments:
         .get_matches();
         //.get_matches_from(arg_vec);
 
-
-
-    //steps
-    //
-    //1. clap
-    //2. get values from clap
-    //3. load file
-    //4. convert format
-    //5. save file
-    //6. end
-
     if let Some(submatches) = matches.subcommand_matches("morph")
     {
 
@@ -139,31 +130,49 @@ fn save_file(path: &str, content: String) -> String{
 
 fn to_file_validator(file_path: String) -> Result<(), String>
 {
-    match file_validator(file_path){
+    match file_validator(&file_path){
         Ok(()) => Ok(()),
         Err(e) => match e
         {
             error::CustomError::File => Err(String::from(format!("{}", error::CustomError::File))),
-            error::CustomError::Io(err) => {println!("Implement, ask to create new file Y/N");
-                Err(String::from(format!("{}", err)))},
+            error::CustomError::Io(_) => 
+            {
+                check_for_file_creation(&file_path)
+            }
         }
     }
+}
+
+fn check_for_file_creation(file_path: &str) -> Result<(), String>
+{
+    println!("File not found, do you want to create the file: (Y/N)");
+    let mut input = String::new();
+    stdin().read_line(&mut input).unwrap();
+    if input.trim().to_ascii_lowercase() == "y"
+    {
+        match OpenOptions::new().write(true).create(true).open(file_path)
+        {
+            Ok(_) => Ok(()),
+            Err(e) => return Err(String::from(format!("{}", e))),
+        }
+    }
+    else{
+        Err(String::from("Will not create the file and exit"))
+    }
+
+
 }
 
 fn from_file_validator(file_path: String) -> Result<(), String>
 {
-    match file_validator(file_path)
+    match file_validator(&file_path)
     {
         Ok(()) => Ok(()),
-        Err(e) => match e
-        {
-            error::CustomError::Io(err) => Err(String::from(format!("{}", err))),
-            error::CustomError::File => Err(String::from(format!("{}", error::CustomError::File))),
-        }
+        Err(e) => Err(String::from(format!("{}", e)))
     }
 }
 
-fn file_validator(file_path: String) -> Result<(), error::CustomError>{
+fn file_validator(file_path: &str) -> Result<(), error::CustomError>{
     let metadata = fs::metadata(file_path);
     match metadata {
         Ok(file) =>  
