@@ -3,11 +3,11 @@ extern crate clap;
 use clap::{Arg, App, SubCommand, AppSettings};
 use std::fs;
 
-
 mod cbt_json;
 mod cbt_ini;
 mod cbt_yaml;
 mod cbt_toml;
+mod error;
 
 fn main(){
     let _arg_vec = vec!["poly", "morph", "json", "test.txt", "to", "yaml", "bla.txt"];
@@ -55,7 +55,8 @@ Arguments:
                 .possible_values(&possible_formats))
             .arg(Arg::with_name("from_file")
                 .help("Set the file from which to convert from.\nExample: C:\\Users\\Harry Potter\\example.txt")
-                .required(true))
+                .required(true)
+                .validator(from_file_validator))
             .subcommand(SubCommand::with_name("to")
                 .usage("poly.exe morph <from_format> <from_file> to <to_format> <to_file>")
                 .arg(Arg::with_name("to_type")
@@ -64,7 +65,8 @@ Arguments:
                     .possible_values(&possible_formats))
                 .arg(Arg::with_name("to_file")
                     .help("The location for the file the conversion will be saved to.\nExample: C:\\Users\\Harry Potter\\converted_example.txt")
-                    .required(true))))
+                    .required(true)
+                    .validator(to_file_validator))))
         .get_matches();
         //.get_matches_from(arg_vec);
 
@@ -135,11 +137,43 @@ fn save_file(path: &str, content: String) -> String{
     String::from("Saved file")
 }
 
-fn _file_validator(v: String) -> Result<(), String>{
-    let metadata = fs::metadata(v);
+fn to_file_validator(file_path: String) -> Result<(), String>
+{
+    match file_validator(file_path){
+        Ok(()) => Ok(()),
+        Err(e) => match e
+        {
+            error::CustomError::File => Err(String::from(format!("{}", error::CustomError::File))),
+            error::CustomError::Io(err) => {println!("Implement, ask to create new file Y/N");
+                Err(String::from(format!("{}", err)))},
+        }
+    }
+}
+
+fn from_file_validator(file_path: String) -> Result<(), String>
+{
+    match file_validator(file_path)
+    {
+        Ok(()) => Ok(()),
+        Err(e) => match e
+        {
+            error::CustomError::Io(err) => Err(String::from(format!("{}", err))),
+            error::CustomError::File => Err(String::from(format!("{}", error::CustomError::File))),
+        }
+    }
+}
+
+fn file_validator(file_path: String) -> Result<(), error::CustomError>{
+    let metadata = fs::metadata(file_path);
     match metadata {
-        Ok(file) =>  if file.is_file(){ return Ok(())} else { Err(String::from("The value is not a valid file")) } 
-        Err(error) => Err(String::from(format!("{}", error)))
+        Ok(file) =>  
+            if file.is_file()
+            { 
+                return Ok(())
+            } else { 
+                Err(error::CustomError::File)
+            } 
+        Err(error) => Err(error::CustomError::Io(error))
     }
 }
 
