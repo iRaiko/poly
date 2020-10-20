@@ -8,7 +8,10 @@ use std::io::stdin;
 mod error;
 
 fn main(){
+
+    //test
     let _arg_vec = vec!["poly", "morph", "doml", r"C:\Users\Raiko\Desktop\Temporary_test_files\result.txt", "to", "json", r"C:\Users\Raiko\Desktop\Temporary_test_files\bla.txt"];
+
 
     let possible_formats = vec!["json", "doml", "yaml", "ini"];
 
